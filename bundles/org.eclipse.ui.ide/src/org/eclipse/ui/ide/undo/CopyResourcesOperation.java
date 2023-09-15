@@ -20,6 +20,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.mapping.IResourceChangeDescriptionFactory;
+import org.eclipse.core.resources.undo.snapshot.IResourceSnapshot;
+import org.eclipse.core.resources.undo.snapshot.ResourceSnapshotFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -55,7 +57,7 @@ public class CopyResourcesOperation extends
 
 	IResource[] originalResources;
 
-	ResourceDescription[] snapshotResourceDescriptions;
+	IResourceSnapshot[] snapshotResourceDescriptions;
 
 	/**
 	 * Create a CopyResourcesOperation that copies a single resource to a new
@@ -163,7 +165,7 @@ public class CopyResourcesOperation extends
 
 		// Are there any previously overwritten resources to restore now?
 		if (resourceDescriptions != null) {
-			for (ResourceDescription resourceDescription : resourceDescriptions) {
+			for (IResourceSnapshot resourceDescription : resourceDescriptions) {
 				if (resourceDescription != null) {
 					resourceDescription.createResource(subMonitor.split(1));
 				}
@@ -210,7 +212,7 @@ public class CopyResourcesOperation extends
 				update = true;
 				factory.delete(resource);
 			}
-			for (ResourceDescription resourceDescription : resourceDescriptions) {
+			for (IResourceSnapshot resourceDescription : resourceDescriptions) {
 				if (resourceDescription != null) {
 					update = true;
 					IResource resource = resourceDescription.createResourceHandle();
@@ -244,7 +246,7 @@ public class CopyResourcesOperation extends
 			markInvalid();
 			return getErrorStatus(UndoMessages.CopyResourcesOperation_NotAllowedDueToDataLoss);
 		}
-		for (ResourceDescription snapshotResourceDescription : snapshotResourceDescriptions) {
+		for (IResourceSnapshot snapshotResourceDescription : snapshotResourceDescriptions) {
 			if (!snapshotResourceDescription.verifyExistence(true)) {
 				markInvalid();
 				return getErrorStatus(UndoMessages.CopyResourcesOperation_NotAllowedDueToDataLoss);
@@ -271,10 +273,9 @@ public class CopyResourcesOperation extends
 	 */
 	private void setOriginalResources(IResource[] originals) {
 		originalResources = originals;
-		snapshotResourceDescriptions = new ResourceDescription[originals.length];
+		snapshotResourceDescriptions = new IResourceSnapshot[originals.length];
 		for (int i = 0; i < originals.length; i++) {
-			snapshotResourceDescriptions[i] = ResourceDescription
-					.fromResource(originals[i]);
+			snapshotResourceDescriptions[i] = ResourceSnapshotFactory.fromResource(originals[i]);
 		}
 	}
 }

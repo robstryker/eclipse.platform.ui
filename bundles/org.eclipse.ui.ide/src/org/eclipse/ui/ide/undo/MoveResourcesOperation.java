@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.mapping.IResourceChangeDescriptionFactory;
+import org.eclipse.core.resources.undo.snapshot.IResourceSnapshot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -129,12 +130,12 @@ public class MoveResourcesOperation extends
 		subMonitor.setTaskName(UndoMessages.AbstractResourcesOperation_MovingResources);
 		List<IResource> resourcesAtDestination = new ArrayList<>();
 		List<IPath> undoDestinationPaths = new ArrayList<>();
-		List<ResourceDescription> overwrittenResources = new ArrayList<>();
+		List<IResourceSnapshot> overwrittenResources = new ArrayList<>();
 
 		for (int i = 0; i < resources.length; i++) {
 			// Move the resources and record the overwrites that would
 			// be restored if this operation were reversed
-			ResourceDescription[] overwrites;
+			IResourceSnapshot[] overwrites;
 			overwrites = WorkspaceUndoUtil.move(new IResource[] { resources[i] }, getDestinationPath(resources[i], i),
 					resourcesAtDestination, undoDestinationPaths, subMonitor.split(1), uiInfo, true);
 
@@ -144,7 +145,7 @@ public class MoveResourcesOperation extends
 
 		// Are there any previously overwritten resources to restore now?
 		if (resourceDescriptions != null) {
-			for (ResourceDescription resourceDescription : resourceDescriptions) {
+			for (IResourceSnapshot resourceDescription : resourceDescriptions) {
 				if (resourceDescription != null) {
 					resourceDescription.createResource(subMonitor.split(1));
 				}
